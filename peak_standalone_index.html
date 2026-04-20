@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="theme-color" content="#00ff88" />
+  <title>Peak</title>
+  <style>
+    :root{
+      --bg:#040704;
+      --bg-soft:#081108;
+      --panel:#0b120d;
+      --panel-2:#101812;
+      --line:#ffffff1f;
+      --white:#f5fff8;
+      --muted:#a7b5aa;
+      --green:#00ff88;
+      --green-2:#7dffbe;
+      --green-dark:#0d2b18;
+      --danger:#172019;
+      --shadow:0 20px 50px rgba(0,0,0,.45);
+      --radius:22px;
+    }
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{margin:0;background:radial-gradient(circle at top,#0f190f 0%,#050805 45%,#020402 100%);color:var(--white);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;min-height:100%}
+    body{display:flex;justify-content:center}
+    .app{width:100%;max-width:430px;min-height:100vh;background:linear-gradient(180deg,#071008,#020402 40%,#020402 100%);position:relative;overflow:hidden;box-shadow:var(--shadow)}
+    .app::before{content:"";position:fixed;inset:auto auto 20% 50%;transform:translateX(-50%);width:280px;height:280px;border-radius:50%;background:radial-gradient(circle,var(--green) 0%,transparent 68%);filter:blur(100px);opacity:.12;pointer-events:none}
+    .screen{display:none;min-height:100vh;padding:22px 18px 100px}
+    .screen.active{display:block}
+    .center{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;gap:14px}
+    .logo{width:92px;height:92px;border-radius:28px;border:1px solid #fff3;background:linear-gradient(145deg,#0c150d,#132416);display:grid;place-items:center;font-size:44px;font-weight:900;color:var(--green);box-shadow:0 0 0 1px #00ff8833 inset,0 0 32px #00ff8835}
+    h1,h2,h3,p{margin:0}
+    h1{font-size:42px;letter-spacing:.02em}
+    h2{font-size:28px}
+    h3{font-size:18px}
+    p{color:var(--muted);line-height:1.45}
+    .sub{max-width:290px}
+    .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px}
+    .mini{font-size:13px;color:var(--muted)}
+    .tag,.chip,.score{display:inline-flex;align-items:center;gap:6px;padding:8px 12px;border-radius:999px;border:1px solid #ffffff21;background:#ffffff0a;color:var(--white);font-size:12px;font-weight:700}
+    .tag.glow,.chip.active,.score{border-color:#00ff8870;color:var(--green);box-shadow:0 0 0 1px #00ff8820 inset,0 0 16px #00ff8814}
+    .stack{display:grid;gap:14px}
+    .card{background:linear-gradient(180deg,#0b120d,#091009);border:1px solid var(--line);border-radius:var(--radius);padding:16px;box-shadow:var(--shadow)}
+    .card.glow{border-color:#00ff8850;box-shadow:0 0 0 1px #00ff8825 inset,0 20px 50px rgba(0,0,0,.45),0 0 30px rgba(0,255,136,.08)}
+    .hero{padding-top:8vh}
+    .row{display:flex;gap:10px}
+    .row>*{flex:1}
+    button,.btn{appearance:none;border:none;background:#111;color:var(--white);font:inherit;font-weight:800;padding:14px 16px;border-radius:16px;cursor:pointer}
+    .primary{background:linear-gradient(180deg,#09150c,#071009);border:1.5px solid var(--green);color:var(--green);box-shadow:0 0 0 1px #00ff8825 inset,0 0 18px #00ff8818}
+    .secondary{background:#0b110c;border:1px solid #ffffff2a;color:var(--white)}
+    .ghost{background:#ffffff08;border:1px solid #ffffff1c;color:var(--white)}
+    .wide{width:100%}
+    .section-title{display:flex;justify-content:space-between;align-items:end;margin:8px 0 12px}
+    label{display:block;margin-bottom:8px;font-size:13px;font-weight:700;color:#e8fff1}
+    input,select{width:100%;padding:14px 14px;border-radius:16px;background:#0a0f0a;border:1.5px solid #ffffff1c;color:var(--white);font:inherit;outline:none}
+    input:focus,select:focus{border-color:var(--green);box-shadow:0 0 0 3px #00ff8822}
+    .feed{display:grid;gap:16px}
+    .media{position:relative;aspect-ratio:9/13;border-radius:20px;overflow:hidden;padding:14px;display:flex;align-items:flex-end;border:1px solid #ffffff17}
+    .media::after{content:"";position:absolute;inset:0;background:linear-gradient(180deg,transparent 15%,rgba(0,0,0,.82) 100%)}
+    .media .inner{position:relative;z-index:1;display:grid;gap:8px}
+    .media.one{background:linear-gradient(135deg,#050805 5%,#0a2414 35%,#0d4f2d 100%)}
+    .media.two{background:linear-gradient(135deg,#030503 5%,#122418 40%,#1c3928 100%)}
+    .media.three{background:linear-gradient(135deg,#020402 5%,#0d1e12 40%,#286841 100%)}
+    .meta{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-top:12px}
+    .actions{display:flex;gap:10px;margin-top:12px}
+    .actions button{flex:1;padding:12px 10px;border-radius:14px;background:#0b110c;border:1px solid #ffffff1c}
+    .actions .accent{border-color:var(--green);color:var(--green)}
+    .chips{display:flex;gap:10px;overflow:auto;padding:4px 0 10px;scrollbar-width:none}
+    .chips::-webkit-scrollbar{display:none}
+    .chip{white-space:nowrap;background:#0c100d}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .community{min-height:150px;display:flex;flex-direction:column;justify-content:space-between}
+    .battle{display:grid;gap:12px}
+    .battle-option{display:flex;justify-content:space-between;align-items:center;padding:16px;border-radius:18px;background:#0b120d;border:1px solid #ffffff1c;font-weight:800}
+    .battle-option.active{border-color:var(--green);color:var(--green);box-shadow:0 0 0 1px #00ff8825 inset}
+    .avatar{width:74px;height:74px;border-radius:22px;border:1px solid #00ff8855;display:grid;place-items:center;background:linear-gradient(180deg,#09120b,#122117);color:var(--green);font-size:30px;font-weight:900}
+    .profile{display:flex;gap:14px;align-items:center}
+    .stats{display:flex;gap:10px}
+    .stat{flex:1;text-align:center}
+    .stat strong{display:block;color:var(--green);font-size:24px;margin-bottom:4px}
+    .bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:100%;max-width:430px;padding:12px 10px calc(12px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,1fr);gap:8px;background:rgba(3,6,3,.94);backdrop-filter:blur(20px);border-top:1px solid #ffffff18}
+    .bottom.hidden{display:none}
+    .nav{padding:10px 6px;border-radius:14px;background:transparent;color:var(--muted);font-size:12px;font-weight:800}
+    .nav.active{border:1px solid #00ff8855;color:var(--green);background:#071009;box-shadow:0 0 18px #00ff8815}
+    .notice{margin-top:12px;padding:12px 14px;border:1px solid #00ff8838;border-radius:16px;background:#071109;color:#dffff0;font-size:14px;display:none}
+    .show{display:block}
+    .search{margin:12px 0}
+    .muted{color:var(--muted)}
+  </style>
+</head>
+<body>
+<div class="app">
+  <section class="screen active center" id="splash">
+    <div class="logo">P</div>
+    <h1>Peak</h1>
+    <p class="sub">Elite edits, ranked battles, niche fandom feeds, and creator tools built for the people who actually care about scene edits.</p>
+    <button class="primary" data-go="onboarding">Enter Peak</button>
+  </section>
+
+  <section class="screen" id="onboarding">
+    <div class="top"><div><strong>Peak</strong><div class="mini">usable MVP</div></div><span class="tag glow">black + green</span></div>
+    <div class="stack hero">
+      <div>
+        <span class="tag glow">Built for edit culture</span>
+        <h2 style="margin-top:10px">Not a generic clip app.</h2>
+        <p style="margin-top:10px">Peak is focused on TV, film, football, anime and nostalgia edits with battle polls, creator presets and themed communities.</p>
+      </div>
+      <div class="card"><h3>Category-led feed</h3><p style="margin-top:8px">Crime, Marvel, football aura, anime, nostalgia and villain edits.</p></div>
+      <div class="card"><h3>Creator tools</h3><p style="margin-top:8px">Beat sync, caption styles, quote presets and cinematic grades.</p></div>
+      <div class="card glow"><h3>Scene Battles</h3><p style="margin-top:8px">Users can vote on the hardest entrances, quotes and emotional scenes.</p></div>
+      <div class="row"><button class="secondary" data-go="login">Skip</button><button class="primary" data-go="login">Continue</button></div>
+    </div>
+  </section>
+
+  <section class="screen" id="login">
+    <div class="top"><div><strong>Peak</strong><div class="mini">set up your feed</div></div></div>
+    <div class="stack hero">
+      <div>
+        <h2>Welcome to Peak</h2>
+        <p style="margin-top:10px">Choose your lane and start with a feed that actually suits what you watch.</p>
+      </div>
+      <div>
+        <label>Username</label>
+        <input id="username" value="peakronan" placeholder="peakronan" />
+      </div>
+      <div>
+        <label>Favourite lane</label>
+        <select id="lane">
+          <option>TV & Film</option>
+          <option>Football</option>
+          <option>Anime</option>
+          <option>Mixed edits</option>
+        </select>
+      </div>
+      <button class="primary wide" id="startBtn">Start watching</button>
+      <div class="notice show">This version is self-contained, so it works when you upload only <strong>index.html</strong> to GitHub.</div>
+    </div>
+  </section>
+
+  <section class="screen" id="home">
+    <div class="top"><div><h2>Peak</h2><div class="mini" id="welcome">For you</div></div><button class="secondary" data-go="discover">Explore</button></div>
+    <div class="chips" id="chips"></div>
+    <div class="card glow" style="margin-bottom:16px">
+      <div class="section-title"><div><span class="tag glow">Live USP</span><h3 style="margin-top:8px">Scene Battles are live</h3></div><button class="primary" data-go="battles">Open</button></div>
+      <p>Peak doesn’t just scroll. It ranks edits, lets fandoms vote, and gives creators a reason to post specifically here.</p>
+    </div>
+    <div class="feed" id="feed"></div>
+  </section>
+
+  <section class="screen" id="discover">
+    <div class="top"><div><h2>Discover</h2><div class="mini">communities</div></div><button class="secondary" data-go="home">Back</button></div>
+    <div class="search"><input id="search" placeholder="Search shows, films, moods, creators" /></div>
+    <div class="grid" id="communityGrid"></div>
+  </section>
+
+  <section class="screen" id="create">
+    <div class="top"><div><h2>Create</h2><div class="mini">Peak creator studio</div></div><button class="secondary" data-go="home">Back</button></div>
+    <div class="stack">
+      <div class="card"><h3>Beat Sync</h3><p style="margin-top:8px">Auto-cuts clips to soundtrack markers and impact beats.</p></div>
+      <div class="card"><h3>QuoteMotion</h3><p style="margin-top:8px">Animated text presets for cold lines and emotional speeches.</p></div>
+      <div class="card glow"><h3>Publish a mock edit</h3>
+        <div style="margin-top:12px">
+          <label>Edit title</label>
+          <input id="draftTitle" placeholder="Tommy Shelby — coldest lines" />
+        </div>
+        <div style="margin-top:12px">
+          <label>Category</label>
+          <select id="draftCategory">
+            <option>Crime Shows</option>
+            <option>Marvel</option>
+            <option>Football</option>
+            <option>Anime</option>
+          </select>
+        </div>
+        <button class="primary wide" id="publishBtn" style="margin-top:14px">Publish mock edit</button>
+        <div class="notice" id="publishNote">Mock edit published to your feed.</div>
+      </div>
+    </div>
+  </section>
+
+  <section class="screen" id="battles">
+    <div class="top"><div><h2>Battles</h2><div class="mini">fan voting</div></div><button class="secondary" data-go="home">Back</button></div>
+    <div class="stack">
+      <div class="card glow battle">
+        <span class="tag glow">Live Poll</span>
+        <h3>Coldest TV entrance</h3>
+        <button class="battle-option active" id="gusBtn">Gus Fring <span id="gusPct">48%</span></button>
+        <button class="battle-option" id="tommyBtn">Tommy Shelby <span id="tommyPct">52%</span></button>
+      </div>
+      <div class="card"><h3>Why this matters</h3><p style="margin-top:8px">This is one of Peak’s actual differentiators. Edits here can be ranked, saved to themed ladders, and pushed by fandom votes.</p></div>
+    </div>
+  </section>
+
+  <section class="screen" id="profile">
+    <div class="top"><div><h2>Profile</h2><div class="mini">creator identity</div></div><button class="secondary" data-go="home">Back</button></div>
+    <div class="stack">
+      <div class="card glow profile"><div class="avatar">P</div><div><h3 id="profileName">peakronan</h3><p style="margin-top:6px">TV & Film editor • 12.4k likes • 8 collections</p></div></div>
+      <div class="stats">
+        <div class="card stat"><strong>17</strong><span class="muted">edits</span></div>
+        <div class="card stat"><strong>4</strong><span class="muted">wins</span></div>
+        <div class="card stat"><strong>3</strong><span class="muted">channels</span></div>
+      </div>
+      <div class="card"><h3>Your Peak USP stack</h3><p style="margin-top:8px">Niche feed, battle participation, collections and editor presets all in one app concept.</p></div>
+    </div>
+  </section>
+
+  <nav class="bottom hidden" id="bottomNav">
+    <button class="nav active" data-go="home">Home</button>
+    <button class="nav" data-go="discover">Discover</button>
+    <button class="nav" data-go="create">Create</button>
+    <button class="nav" data-go="battles">Battles</button>
+    <button class="nav" data-go="profile">Profile</button>
+  </nav>
+</div>
+<script>
+const state = {
+  user: 'peakronan',
+  lane: 'TV & Film',
+  active: 'All',
+  votes: {gus:48,tommy:52},
+  feed: [
+    {title:'Tommy Shelby — coldest lines', category:'Crime Shows', creator:'@cutbykai', likes:'118k', saves:'8.2k', text:'QuoteMotion preset used • 23 sec • high retention', cls:'one'},
+    {title:'Daredevil hallway rage edit', category:'Marvel', creator:'@scene.surgeon', likes:'89k', saves:'6.1k', text:'Beat sync + flash cuts • fan rank #2', cls:'two'},
+    {title:'Rooney prime aura compilation', category:'Football', creator:'@peakboots', likes:'64k', saves:'4.9k', text:'Legacy grade • nostalgia playlist trending', cls:'three'},
+    {title:'Anime betrayal arc in 18 sec', category:'Anime', creator:'@framefury', likes:'143k', saves:'12.7k', text:'Shake preset + emotional captions', cls:'two'}
+  ],
+  communities: [
+    ['Crime Shows','Peaky, Breaking Bad, Sopranos edits','92k members'],
+    ['Marvel','Heroes, villains, fights, entrances','121k members'],
+    ['Football Aura','Players, moments, commentary goosebumps','74k members'],
+    ['Anime Core','Transformations, speeches, heartbreak arcs','134k members'],
+    ['Nostalgia','2000s films, old trailers, legacy scenes','41k members'],
+    ['Villain Energy','Coldest antagonists and power edits','58k members']
+  ]
+};
+const screens=[...document.querySelectorAll('.screen')];
+const nav=document.getElementById('bottomNav');
+const navBtns=[...document.querySelectorAll('.nav')];
+function go(id){
+  screens.forEach(s=>s.classList.toggle('active', s.id===id));
+  nav.classList.toggle('hidden', !['home','discover','create','battles','profile'].includes(id));
+  navBtns.forEach(n=>n.classList.toggle('active', n.dataset.go===id));
+  if(id==='home') renderFeed();
+  if(id==='discover') renderCommunities();
+  if(id==='profile') document.getElementById('profileName').textContent=state.user;
+}
+[...document.querySelectorAll('[data-go]')].forEach(b=>b.addEventListener('click',()=>go(b.dataset.go)));
+const categories=['All','Crime Shows','Marvel','Football','Anime'];
+function renderChips(){
+  const el=document.getElementById('chips');
+  el.innerHTML='';
+  categories.forEach(cat=>{
+    const b=document.createElement('button');
+    b.className='chip'+(state.active===cat?' active':'');
+    b.textContent=cat;
+    b.onclick=()=>{state.active=cat;renderChips();renderFeed();};
+    el.appendChild(b);
+  });
+}
+function renderFeed(){
+  renderChips();
+  const feed=document.getElementById('feed');
+  const items=state.active==='All'?state.feed:state.feed.filter(x=>x.category===state.active);
+  feed.innerHTML=items.map(item=>`<div class="card"><div class="media ${item.cls}"><div class="inner"><span class="tag glow">${item.category}</span><h3>${item.title}</h3><p>${item.text}</p></div></div><div class="meta"><div><strong>${item.creator}</strong><div class="mini">${item.likes} likes • ${item.saves} saves</div></div><span class="score">Peak 9.4</span></div><div class="actions"><button>Like</button><button>Save</button><button class="accent">Battle</button></div></div>`).join('');
+}
+function renderCommunities(q=''){
+  const grid=document.getElementById('communityGrid');
+  const query=q.toLowerCase().trim();
+  grid.innerHTML=state.communities.filter(c=>(c[0]+' '+c[1]).toLowerCase().includes(query)).map(c=>`<div class="card community"><div><span class="tag">Community</span><h3 style="margin-top:10px">${c[0]}</h3><p style="margin-top:8px">${c[1]}</p></div><div class="section-title" style="margin:0"><span class="mini">${c[2]}</span><button class="primary">Follow</button></div></div>`).join('');
+}
+document.getElementById('search').addEventListener('input',e=>renderCommunities(e.target.value));
+document.getElementById('startBtn').addEventListener('click',()=>{
+  state.user=document.getElementById('username').value||'peakuser';
+  state.lane=document.getElementById('lane').value;
+  document.getElementById('welcome').textContent=state.user+' • '+state.lane;
+  go('home');
+});
+document.getElementById('publishBtn').addEventListener('click',()=>{
+  const title=document.getElementById('draftTitle').value||'Untitled Peak Edit';
+  const category=document.getElementById('draftCategory').value;
+  state.feed.unshift({title,category,creator:'@'+state.user,likes:'0',saves:'0',text:'Freshly published from Peak creator studio',cls:'three'});
+  document.getElementById('publishNote').classList.add('show');
+  setTimeout(()=>document.getElementById('publishNote').classList.remove('show'),1500);
+});
+function updateVotes(choice){
+  if(choice==='gus'){state.votes.gus=Math.min(99,state.votes.gus+1);state.votes.tommy=100-state.votes.gus;}
+  else {state.votes.tommy=Math.min(99,state.votes.tommy+1);state.votes.gus=100-state.votes.tommy;}
+  document.getElementById('gusPct').textContent=state.votes.gus+'%';
+  document.getElementById('tommyPct').textContent=state.votes.tommy+'%';
+  document.getElementById('gusBtn').classList.toggle('active',choice==='gus');
+  document.getElementById('tommyBtn').classList.toggle('active',choice==='tommy');
+}
+document.getElementById('gusBtn').onclick=()=>updateVotes('gus');
+document.getElementById('tommyBtn').onclick=()=>updateVotes('tommy');
+renderFeed();renderCommunities();
+</script>
+</body>
+</html>
